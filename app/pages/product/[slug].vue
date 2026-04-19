@@ -12,12 +12,6 @@
                 <nav class="flex items-center gap-6">
                     <NuxtLink to="/" class="text-slate-300 hover:text-white transition-colors">Shop</NuxtLink>
                     <button class="text-slate-300 hover:text-white transition-colors">About</button>
-                    <button class="relative group">
-                        <span class="text-slate-300 group-hover:text-white transition-colors">Cart</span>
-                        <span
-                            class="absolute -top-2 -right-3 w-5 h-5 bg-orange-500 rounded-full text-xs text-white flex items-center justify-center font-bold">{{
-                            cartCount }}</span>
-                    </button>
                 </nav>
             </div>
         </header>
@@ -39,69 +33,38 @@
                     <div>
                         <div class="mb-4">
                             <span
-                                class="inline-block bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                                {{ product.discount }}% OFF
+                                class="inline-block bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                                Available
                             </span>
                             <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">{{ product.name }}</h1>
 
-                            <div class="flex items-center gap-4 mb-6">
-                                <div class="flex items-center gap-1">
-                                    <span v-for="i in 5" :key="i" class="text-yellow-400 text-lg">
-                                        {{ i <= product.rating ? '★' : '☆' }} </span>
-                                            <span class="text-slate-400 ml-3">({{ product.reviews }} reviews)</span>
-                                </div>
-                            </div>
-
                             <div class="flex items-center gap-4 mb-8">
                                 <span class="text-4xl font-bold text-orange-400">
-                                    ₨{{ product.discountedPrice.toLocaleString() }}
-                                </span>
-                                <span class="text-2xl text-slate-500 line-through">
-                                    ₨{{ product.originalPrice.toLocaleString() }}
-                                </span>
-                                <span class="text-lg text-green-400 font-semibold">
-                                    Save ₨{{ (product.originalPrice - product.discountedPrice).toLocaleString() }}
+                                    ₨{{ product.price.toLocaleString() }}
                                 </span>
                             </div>
 
                             <p class="text-slate-300 text-lg leading-relaxed mb-8">
                                 {{ product.description }}
                             </p>
-
-                            <div class="grid grid-cols-2 gap-4 mb-8">
-                                <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-                                    <p class="text-slate-400 text-sm mb-1">Stock Status</p>
-                                    <p class="text-white font-semibold text-lg">In Stock ({{ product.stock }} left)</p>
-                                </div>
-                                <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-                                    <p class="text-slate-400 text-sm mb-1">Shipping</p>
-                                    <p class="text-white font-semibold text-lg">Free Delivery</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-center gap-4">
-                            <span class="text-slate-300 font-semibold">Quantity:</span>
-                            <div class="flex items-center border border-slate-700 rounded-lg bg-slate-800/50">
-                                <button @click="quantity = Math.max(1, quantity - 1)"
-                                    class="px-4 py-2 text-orange-400 hover:bg-slate-700 transition-colors">−</button>
-                                <span class="px-6 py-2 text-white font-semibold">{{ quantity }}</span>
-                                <button @click="quantity = Math.min(product.stock, quantity + 1)"
-                                    class="px-4 py-2 text-orange-400 hover:bg-slate-700 transition-colors">+</button>
-                            </div>
+                        <button @click="showContact = !showContact"
+                            class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-3">
+                            <span class="text-2xl">📱</span>
+                            <span>Contact on WhatsApp</span>
+                        </button>
+                        <div v-if="showContact"
+                            class="bg-slate-800/50 border border-green-600 rounded-lg p-4 text-center">
+                            <p class="text-slate-400 text-sm mb-2">Contact Number</p>
+                            <p class="text-white font-bold text-2xl">{{ formatPhone(product.phone) }}</p>
+                            <a :href="`https://wa.me/${product.phone}`" target="_blank" rel="noopener noreferrer"
+                                class="mt-4 inline-block w-full py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                                Open WhatsApp
+                            </a>
                         </div>
-
-                        <button @click="addToCart"
-                            class="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105">
-                            Add to Cart
-                        </button>
-
-                        <button
-                            class="w-full py-4 border-2 border-orange-500 text-orange-400 hover:bg-orange-500/10 font-bold text-lg rounded-lg transition-all duration-300">
-                            Add to Wishlist
-                        </button>
                     </div>
                 </div>
             </div>
@@ -158,15 +121,12 @@
                                 {{ related.name }}
                             </h3>
                             <div class="flex items-center gap-2 mb-3">
-                                <span class="text-orange-400 font-bold">₨{{ related.discountedPrice.toLocaleString()
-                                    }}</span>
-                                <span class="text-slate-500 line-through text-xs">₨{{
-                                    related.originalPrice.toLocaleString() }}</span>
+                                <span class="text-orange-400 font-bold">₨{{ related.price.toLocaleString() }}</span>
                             </div>
-                            <button
-                                class="w-full py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg text-sm transition-all duration-300 transform group-hover:scale-105">
+                            <NuxtLink :to="`/product/${related.slug}`"
+                                class="w-full py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg text-sm transition-all duration-300 transform group-hover:scale-105 block text-center">
                                 View
-                            </button>
+                            </NuxtLink>
                         </div>
                     </div>
                 </div>
@@ -186,21 +146,25 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const quantity = ref(1)
-const cartCount = ref(0)
+const showContact = ref(false)
+
+const formatPhone = (phone) => {
+    if (!phone) return ''
+    const phoneStr = phone.toString()
+    if (phoneStr.startsWith('92')) {
+        return '+92 ' + phoneStr.slice(2, 5) + ' ' + phoneStr.slice(5, 8) + ' ' + phoneStr.slice(8)
+    }
+    return phone
+}
 
 const allProducts = [
     {
         id: 1,
         slug: 'premium-wireless-headphones',
         name: "Premium Wireless Headphones",
-        originalPrice: 12999,
-        discountedPrice: 8999,
-        discount: 31,
+        price: 8999,
         image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop",
-        rating: 5,
-        reviews: 248,
-        stock: 15,
+        phone: "923001234567",
         brand: "AudioPro",
         warranty: "2 Years",
         description: "Experience crystal-clear audio with our premium wireless headphones. Featuring active noise cancellation, 30-hour battery life, and premium comfort design for all-day wear.",
@@ -217,13 +181,9 @@ const allProducts = [
         id: 2,
         slug: 'smart-watch-pro',
         name: "Smart Watch Pro",
-        originalPrice: 15999,
-        discountedPrice: 10999,
-        discount: 31,
+        price: 10999,
         image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=800&fit=crop",
-        rating: 4,
-        reviews: 156,
-        stock: 22,
+        phone: "923002234567",
         brand: "TechWear",
         warranty: "1 Year",
         description: "Stay connected with our advanced smartwatch. Monitor your health, track fitness activities, and manage notifications all from your wrist with our intuitive interface.",
@@ -240,13 +200,9 @@ const allProducts = [
         id: 3,
         slug: '4k-usb-camera',
         name: "4K USB Camera",
-        originalPrice: 8999,
-        discountedPrice: 5999,
-        discount: 33,
+        price: 5999,
         image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&h=800&fit=crop",
-        rating: 5,
-        reviews: 312,
-        stock: 18,
+        phone: "923003234567",
         brand: "VisualTech",
         warranty: "1 Year",
         description: "Perfect for content creators and professionals. Capture stunning 4K video with automatic focus and low-light performance. Plug-and-play USB connection makes setup effortless.",
@@ -263,13 +219,9 @@ const allProducts = [
         id: 4,
         slug: 'portable-ssd-1tb',
         name: "Portable SSD 1TB",
-        originalPrice: 11999,
-        discountedPrice: 7999,
-        discount: 33,
+        price: 7999,
         image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=800&h=800&fit=crop",
-        rating: 5,
-        reviews: 489,
-        stock: 30,
+        phone: "923004234567",
         brand: "StorageMax",
         warranty: "3 Years",
         description: "Ultra-fast external storage with 1TB capacity. Perfect for backing up photos, videos, and documents. Its rugged design protects your data wherever you go.",
@@ -286,13 +238,9 @@ const allProducts = [
         id: 5,
         slug: 'mechanical-keyboard-rgb',
         name: "Mechanical Keyboard RGB",
-        originalPrice: 9999,
-        discountedPrice: 6999,
-        discount: 30,
+        price: 6999,
         image: "https://images.unsplash.com/photo-1587829191301-e8055a6e5f7b?w=800&h=800&fit=crop",
-        rating: 4,
-        reviews: 201,
-        stock: 25,
+        phone: "923005234567",
         brand: "KeyMaster",
         warranty: "2 Years",
         description: "Mechanical keyboard with RGB lighting for gaming and productivity. Features responsive switches and customizable backlighting to suit your style.",
@@ -309,13 +257,9 @@ const allProducts = [
         id: 6,
         slug: 'led-ring-light-pro',
         name: "LED Ring Light Pro",
-        originalPrice: 5999,
-        discountedPrice: 3999,
-        discount: 33,
+        price: 3999,
         image: "https://images.unsplash.com/photo-1633356122544-f134324ef6db?w=800&h=800&fit=crop",
-        rating: 5,
-        reviews: 567,
-        stock: 35,
+        phone: "923006234567",
         brand: "LightStudio",
         warranty: "1 Year",
         description: "Professional LED ring light for photography and streaming. Adjustable brightness and color temperature for perfect lighting in any situation.",
@@ -332,13 +276,9 @@ const allProducts = [
         id: 7,
         slug: 'usb-c-hub-adapter',
         name: "USB-C Hub Adapter",
-        originalPrice: 4999,
-        discountedPrice: 2999,
-        discount: 40,
+        price: 2999,
         image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=800&fit=crop",
-        rating: 4,
-        reviews: 123,
-        stock: 50,
+        phone: "923007234567",
         brand: "ConnectHub",
         warranty: "1 Year",
         description: "Expand your USB-C port with multiple connections. Supports HDMI, USB 3.0, and power delivery for comprehensive connectivity.",
@@ -355,13 +295,9 @@ const allProducts = [
         id: 8,
         slug: 'premium-phone-stand',
         name: "Premium Phone Stand",
-        originalPrice: 2999,
-        discountedPrice: 1799,
-        discount: 40,
+        price: 1799,
         image: "https://images.unsplash.com/photo-1605559424843-9e4c3ff86e89?w=800&h=800&fit=crop",
-        rating: 5,
-        reviews: 789,
-        stock: 60,
+        phone: "923008234567",
         brand: "HoldTech",
         warranty: "1 Year",
         description: "Adjustable phone stand for desk and bed. Perfect for video calls, streaming, and watching content with hands-free convenience.",
@@ -383,9 +319,4 @@ const product = computed(() => {
 const relatedProducts = computed(() => {
     return allProducts.filter(p => p.id !== product.value.id).slice(0, 4)
 })
-
-const addToCart = () => {
-    cartCount.value += quantity.value
-    quantity.value = 1
-}
 </script>
