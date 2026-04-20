@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['./app/assets/css/app.css'],
+  runtimeConfig: {
+    apiUrl: ''
+  },
   vite: {
     plugins: [
       tailwindcss(),
