@@ -16,7 +16,11 @@
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-6 py-12">
+        <div v-if="!product" class="max-w-7xl mx-auto px-6 py-12">
+            <p class="text-white text-center">Loading...</p>
+        </div>
+
+        <div v-else class="max-w-7xl mx-auto px-6 py-12">
             <NuxtLink to="/"
                 class="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors mb-8">
                 <span>←</span>
@@ -24,9 +28,34 @@
             </NuxtLink>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-                <div
-                    class="flex items-center justify-center bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden aspect-square">
-                    <img :src="product.image" :alt="product.name" class="w-full h-full object-cover" />
+                <div>
+                    <div
+                        class="flex items-center justify-center bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden aspect-square mb-4">
+                        <img v-if="selectedImage" :src="selectedImage" :alt="product.name"
+                            class="w-full h-full object-cover" />
+                        <span v-else class="text-slate-400">No image</span>
+                    </div>
+
+                    <!-- Gallery -->
+                    <div v-if="product.images && product.images.length" class="flex gap-3 overflow-x-auto pb-2">
+                        <button @click="selectedImage = product.image" :class="[
+                            'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
+                            selectedImage === product.image
+                                ? 'border-orange-500'
+                                : 'border-slate-700 hover:border-slate-600'
+                        ]">
+                            <img :src="product.image" :alt="product.name" class="w-full h-full object-cover" />
+                        </button>
+
+                        <button v-for="(img, idx) in product.images" :key="idx" @click="selectedImage = img" :class="[
+                            'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
+                            selectedImage === img
+                                ? 'border-orange-500'
+                                : 'border-slate-700 hover:border-slate-600'
+                        ]">
+                            <img :src="img" :alt="`${product.name} ${idx + 1}`" class="w-full h-full object-cover" />
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex flex-col justify-between">
@@ -34,7 +63,7 @@
                         <div class="mb-4">
                             <span
                                 class="inline-block bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                                Available
+                                {{ product.is_sold ? 'Sold Out' : 'Available' }}
                             </span>
                             <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">{{ product.name }}</h1>
 
@@ -51,12 +80,12 @@
                     </div>
 
                     <div class="space-y-4">
-                        <button @click="showContact = !showContact"
-                            class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-3">
+                        <button @click="showContact = !showContact" :disabled="product.is_sold"
+                            class="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-3">
                             <span class="text-2xl">📱</span>
-                            <span>Contact on WhatsApp</span>
+                            <span>{{ product.is_sold ? 'Sold Out' : 'Contact on WhatsApp' }}</span>
                         </button>
-                        <div v-if="showContact"
+                        <div v-if="showContact && !product.is_sold"
                             class="bg-slate-800/50 border border-green-600 rounded-lg p-4 text-center">
                             <p class="text-slate-400 text-sm mb-2">Contact Number</p>
                             <p class="text-white font-bold text-2xl">{{ formatPhone(product.phone) }}</p>
@@ -84,19 +113,23 @@
                                 <span class="text-white font-semibold">{{ product.warranty }}</span>
                             </li>
                             <li class="flex justify-between text-slate-300 pb-3 border-b border-slate-800">
-                                <span>Availability:</span>
-                                <span class="text-white font-semibold">Ships in 2-3 days</span>
+                                <span>Quantity:</span>
+                                <span class="text-white font-semibold">{{ product.quantity }}</span>
+                            </li>
+                            <li class="flex justify-between text-slate-300 pb-3 border-b border-slate-800">
+                                <span>Return Policy:</span>
+                                <span class="text-white font-semibold">{{ product.return }}</span>
                             </li>
                             <li class="flex justify-between text-slate-300">
-                                <span>Return Policy:</span>
-                                <span class="text-white font-semibold">30 days</span>
+                                <span>Shipping:</span>
+                                <span class="text-white font-semibold">{{ product.shipping }}</span>
                             </li>
                         </ul>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-white mb-4">Features</h3>
                         <ul class="space-y-2">
-                            <li v-for="(feature, idx) in product.features" :key="idx"
+                            <li v-for="(feature, idx) in parsedFeatures" :key="idx"
                                 class="flex items-start gap-3 text-slate-300">
                                 <span class="text-orange-400 font-bold mt-0.5">✓</span>
                                 <span>{{ feature }}</span>
@@ -106,7 +139,7 @@
                 </div>
             </div>
 
-            <div class="border-t border-slate-800 pt-12">
+            <div v-if="relatedProducts.length" class="border-t border-slate-800 pt-12">
                 <h2 class="text-3xl font-bold text-white mb-8">Related Products</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div v-for="related in relatedProducts" :key="related.id"
@@ -142,11 +175,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-
 const route = useRoute()
 const showContact = ref(false)
+const relatedProducts = ref([])
+const product = ref(null)
+const selectedImage = ref(null)
 
 const formatPhone = (phone) => {
     if (!phone) return ''
@@ -157,166 +190,29 @@ const formatPhone = (phone) => {
     return phone
 }
 
-const allProducts = [
-    {
-        id: 1,
-        slug: 'premium-wireless-headphones',
-        name: "Premium Wireless Headphones",
-        price: 8999,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop",
-        phone: "923001234567",
-        brand: "AudioPro",
-        warranty: "2 Years",
-        description: "Experience crystal-clear audio with our premium wireless headphones. Featuring active noise cancellation, 30-hour battery life, and premium comfort design for all-day wear.",
-        features: [
-            "Active Noise Cancellation (ANC)",
-            "30-hour battery life",
-            "Bluetooth 5.0 connectivity",
-            "Premium memory foam padding",
-            "Built-in microphone for calls",
-            "Foldable design with carrying case"
-        ]
-    },
-    {
-        id: 2,
-        slug: 'smart-watch-pro',
-        name: "Smart Watch Pro",
-        price: 10999,
-        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=800&fit=crop",
-        phone: "923002234567",
-        brand: "TechWear",
-        warranty: "1 Year",
-        description: "Stay connected with our advanced smartwatch. Monitor your health, track fitness activities, and manage notifications all from your wrist with our intuitive interface.",
-        features: [
-            "Heart rate monitoring",
-            "Sleep tracking",
-            "GPS tracking",
-            "Water resistant (50m)",
-            "7-day battery life",
-            "Multiple watch faces"
-        ]
-    },
-    {
-        id: 3,
-        slug: '4k-usb-camera',
-        name: "4K USB Camera",
-        price: 5999,
-        image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&h=800&fit=crop",
-        phone: "923003234567",
-        brand: "VisualTech",
-        warranty: "1 Year",
-        description: "Perfect for content creators and professionals. Capture stunning 4K video with automatic focus and low-light performance. Plug-and-play USB connection makes setup effortless.",
-        features: [
-            "4K video recording at 30fps",
-            "1080p at 60fps",
-            "Autofocus technology",
-            "Low-light performance",
-            "USB plug-and-play",
-            "Compatible with all platforms"
-        ]
-    },
-    {
-        id: 4,
-        slug: 'portable-ssd-1tb',
-        name: "Portable SSD 1TB",
-        price: 7999,
-        image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=800&h=800&fit=crop",
-        phone: "923004234567",
-        brand: "StorageMax",
-        warranty: "3 Years",
-        description: "Ultra-fast external storage with 1TB capacity. Perfect for backing up photos, videos, and documents. Its rugged design protects your data wherever you go.",
-        features: [
-            "1TB storage capacity",
-            "USB-C 3.1 Gen 2",
-            "550MB/s read speed",
-            "Rugged & shockproof design",
-            "Compact form factor",
-            "Works with Mac & Windows"
-        ]
-    },
-    {
-        id: 5,
-        slug: 'mechanical-keyboard-rgb',
-        name: "Mechanical Keyboard RGB",
-        price: 6999,
-        image: "https://images.unsplash.com/photo-1587829191301-e8055a6e5f7b?w=800&h=800&fit=crop",
-        phone: "923005234567",
-        brand: "KeyMaster",
-        warranty: "2 Years",
-        description: "Mechanical keyboard with RGB lighting for gaming and productivity. Features responsive switches and customizable backlighting to suit your style.",
-        features: [
-            "Mechanical blue switches",
-            "RGB backlit keys",
-            "Customizable macros",
-            "Wired USB connection",
-            "Aluminum frame",
-            "N-key rollover"
-        ]
-    },
-    {
-        id: 6,
-        slug: 'led-ring-light-pro',
-        name: "LED Ring Light Pro",
-        price: 3999,
-        image: "https://images.unsplash.com/photo-1633356122544-f134324ef6db?w=800&h=800&fit=crop",
-        phone: "923006234567",
-        brand: "LightStudio",
-        warranty: "1 Year",
-        description: "Professional LED ring light for photography and streaming. Adjustable brightness and color temperature for perfect lighting in any situation.",
-        features: [
-            "10-inch diameter ring",
-            "3-color temperature modes",
-            "Adjustable brightness (1-100%)",
-            "Phone holder included",
-            "USB powered",
-            "360° rotation stand"
-        ]
-    },
-    {
-        id: 7,
-        slug: 'usb-c-hub-adapter',
-        name: "USB-C Hub Adapter",
-        price: 2999,
-        image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=800&h=800&fit=crop",
-        phone: "923007234567",
-        brand: "ConnectHub",
-        warranty: "1 Year",
-        description: "Expand your USB-C port with multiple connections. Supports HDMI, USB 3.0, and power delivery for comprehensive connectivity.",
-        features: [
-            "7-in-1 adapter",
-            "HDMI 4K output",
-            "USB 3.0 ports",
-            "100W power delivery",
-            "SD card reader",
-            "Compact design"
-        ]
-    },
-    {
-        id: 8,
-        slug: 'premium-phone-stand',
-        name: "Premium Phone Stand",
-        price: 1799,
-        image: "https://images.unsplash.com/photo-1605559424843-9e4c3ff86e89?w=800&h=800&fit=crop",
-        phone: "923008234567",
-        brand: "HoldTech",
-        warranty: "1 Year",
-        description: "Adjustable phone stand for desk and bed. Perfect for video calls, streaming, and watching content with hands-free convenience.",
-        features: [
-            "Adjustable angles (0-180°)",
-            "Non-slip rubber pads",
-            "Universal phone compatibility",
-            "Aluminum construction",
-            "Portable & lightweight",
-            "Stable base design"
-        ]
-    }
-]
-
-const product = computed(() => {
-    return allProducts.find(p => p.slug === route.params.slug) || allProducts[0]
+const parsedFeatures = computed(() => {
+    if (!product.value?.features) return []
+    return product.value.features
+        .replace(/<[^>]*>/g, '')
+        .split('\n')
+        .map(f => f.trim())
+        .filter(f => f.length > 0)
 })
 
-const relatedProducts = computed(() => {
-    return allProducts.filter(p => p.id !== product.value.id).slice(0, 4)
+onMounted(async () => {
+    try {
+        const data = await $fetch('/api/product', {
+            method: 'POST',
+            body: {
+                slug: route.params.slug
+            }
+        })
+        product.value = data
+        selectedImage.value = data.image
+        const related = await $fetch('/api/products')
+        relatedProducts.value = related.filter(p => p.id !== data.id).slice(0, 4)
+    } catch (error) {
+        console.error('Error fetching product:', error)
+    }
 })
 </script>
