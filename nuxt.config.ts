@@ -5,7 +5,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['./app/assets/css/app.css'],
   runtimeConfig: {
-    apiUrl: ''
+    apiUrl: '',
+    public: {
+      store: '',
+      phone: '',
+    }
   },
   vite: {
     plugins: [

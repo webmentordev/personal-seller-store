@@ -1,20 +1,6 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div
-                        class="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-lg">◆</span>
-                    </div>
-                    <h1 class="text-2xl font-bold text-white tracking-tight">StoreHub</h1>
-                </div>
-                <nav class="flex items-center gap-6">
-                    <NuxtLink to="/" class="text-slate-300 hover:text-white transition-colors">Shop</NuxtLink>
-                    <button class="text-slate-300 hover:text-white transition-colors">About</button>
-                </nav>
-            </div>
-        </header>
+    <div class="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
+        <Header />
 
         <div v-if="!product" class="max-w-7xl mx-auto px-6 py-12">
             <p class="text-white text-center">Loading...</p>
@@ -35,11 +21,9 @@
                             class="w-full h-full object-cover" />
                         <span v-else class="text-slate-400">No image</span>
                     </div>
-
-                    <!-- Gallery -->
                     <div v-if="product.images && product.images.length" class="flex gap-3 overflow-x-auto pb-2">
                         <button @click="selectedImage = product.image" :class="[
-                            'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
+                            'shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
                             selectedImage === product.image
                                 ? 'border-orange-500'
                                 : 'border-slate-700 hover:border-slate-600'
@@ -48,7 +32,7 @@
                         </button>
 
                         <button v-for="(img, idx) in product.images" :key="idx" @click="selectedImage = img" :class="[
-                            'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
+                            'shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
                             selectedImage === img
                                 ? 'border-orange-500'
                                 : 'border-slate-700 hover:border-slate-600'
@@ -69,7 +53,7 @@
 
                             <div class="flex items-center gap-4 mb-8">
                                 <span class="text-4xl font-bold text-orange-400">
-                                    ₨{{ product.price.toLocaleString() }}
+                                    PKR {{ product.price.toLocaleString() }}
                                 </span>
                             </div>
 
@@ -154,10 +138,10 @@
                                 {{ related.name }}
                             </h3>
                             <div class="flex items-center gap-2 mb-3">
-                                <span class="text-orange-400 font-bold">₨{{ related.price.toLocaleString() }}</span>
+                                <span class="text-orange-400 font-bold">PKR {{ related.price.toLocaleString() }}</span>
                             </div>
                             <NuxtLink :to="`/product/${related.slug}`"
-                                class="w-full py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg text-sm transition-all duration-300 transform group-hover:scale-105 block text-center">
+                                class="w-full py-2 bg-linear-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg text-sm transition-all duration-300 transform group-hover:scale-105 block text-center">
                                 View
                             </NuxtLink>
                         </div>
@@ -166,11 +150,7 @@
             </div>
         </div>
 
-        <footer class="border-t border-slate-800 mt-20 py-12">
-            <div class="max-w-7xl mx-auto px-6 text-center text-slate-400">
-                <p>© 2024 StoreHub. Built for Pakistan with ❤️</p>
-            </div>
-        </footer>
+        <Footer />
     </div>
 </template>
 
@@ -207,12 +187,41 @@ onMounted(async () => {
                 slug: route.params.slug
             }
         })
+        if (!data) {
+            throw createError({
+                statusCode: 404,
+                statusMessage: 'Product not found',
+                data: { slug: route.params.slug }
+            })
+        }
         product.value = data
         selectedImage.value = data.image
         const related = await $fetch('/api/products')
         relatedProducts.value = related.filter(p => p.id !== data.id).slice(0, 4)
+
     } catch (error) {
-        console.error('Error fetching product:', error)
+        throw createError({
+            statusCode: error.statusCode || 500,
+            statusMessage: error.message || 'Failed to load product',
+            fatal: true
+        })
     }
+})
+
+watchEffect(() => {
+    if (!product.value) return
+    useSeoMeta({
+        title: `${product.value.name} | Buy & Sell Online in Multan`,
+        ogTitle: product.value.name,
+        description: product.value.description?.slice(0, 160),
+        ogDescription: product.value.description?.slice(0, 160),
+        ogImage: product.value.image,
+        twitterCard: 'summary_large_image',
+        ogType: 'product',
+        ogSiteName: 'My Store',
+        twitterTitle: product.value.name,
+        twitterDescription: product.value.description?.slice(0, 160),
+        twitterImage: product.value.image,
+    })
 })
 </script>
