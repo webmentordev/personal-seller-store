@@ -53,10 +53,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
 const products = ref([]);
-
 const data = await $fetch('/api/products')
 products.value = data;
+
+useSeoMeta({
+    title: 'StoreHubMultan - Buy & Sell used items in multan, Pakistan',
+    ogTitle: 'StoreHubMultan - Buy & Sell used items in multan, Pakistan',
+    description: 'Buy and sell used items in Multan, Pakistan. Discover great deals on furniture, electronics, clothing, and more. Fast, safe, and easy online marketplace for secondhand goods.',
+    ogDescription: 'Buy and sell used items in Multan, Pakistan. Discover great deals on furniture, electronics, clothing, and more. Fast, safe, and easy online marketplace for secondhand goods.',
+    ogImage: '/app-store.png',
+    ogType: 'website',
+    twitterCard: 'summary_large_image',
+    twitterTitle: 'StoreHubMultan - Buy & Sell used items in multan, Pakistan',
+    twitterDescription: 'Buy and sell used items in Multan, Pakistan. Discover great deals on secondhand goods online.',
+    keywords: 'buy used items, sell used items, Multan, Pakistan, secondhand marketplace, classified ads',
+})
 </script>

@@ -11,6 +11,17 @@ export default defineNuxtConfig({
       phone: '',
     }
   },
+  app: {
+    head: {
+      title: 'StoreHubMultan - Buy & Sell used items in multan, Pakistan',
+      htmlAttrs: {
+        lang: 'en',
+      },
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/app-store.png' },
+      ],
+    },
+  },
   vite: {
     plugins: [
       tailwindcss(),

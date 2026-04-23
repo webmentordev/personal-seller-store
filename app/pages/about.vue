@@ -74,4 +74,21 @@
 <script setup>
 const config = useRuntimeConfig();
 const store = config.public.store;
+
+useSeoMeta({
+    title: 'About StoreHubMultan - Personal Marketplace in Multan, Pakistan',
+    ogTitle: 'About StoreHubMultan - Meet Ahmer',
+    description: 'Learn about StoreHubMultan, a trusted personal marketplace in Multan. Founded by Ahmer, we offer quality used and new items with honest prices. Discover our story and service.',
+    ogDescription: 'Meet Ahmer and discover StoreHubMultan - a personal marketplace dedicated to selling quality products in Multan with trust and transparency.',
+    ogImage: '/app-store.png',
+    ogType: 'website',
+    ogUrl: 'https://storehubmultan.online/about',
+    twitterCard: 'summary_large_image',
+    twitterTitle: 'About StoreHubMultan - Personal Marketplace in Multan',
+    twitterDescription: 'Learn about Ahmer\'s personal marketplace in Multan. Quality products, honest prices, trusted seller.',
+    keywords: 'about storehubmultan, Ahmer marketplace, Multan secondhand store, personal marketplace, trusted seller Multan',
+    robots: 'index, follow',
+    author: 'StoreHubMultan - Ahmer',
+    themeColor: '#ea580c'
+})
 </script>
